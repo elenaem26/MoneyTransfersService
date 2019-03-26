@@ -2,13 +2,13 @@ package revolut.bank.utils.token;
 
 import lombok.*;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AccountTokenRegistry {
 
-    private static Map<String, LockValue> lockMap = new ConcurrentHashMap<>();
+    private static Map<String, LockValue> lockMap = new HashMap<>();
 
     public synchronized static LockValue register(String key) {
         LockValue res = lockMap.get(key);

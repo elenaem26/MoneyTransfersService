@@ -55,8 +55,8 @@ public class MoneyTransfersService {
         return conditions;
     }
 
-    public synchronized void transfer(TransferInfoDto transferInfoDto) throws MoneyTransferringException, InterruptedException {
-        //because of the possibility of the deadlock the block should be locked in a certain order
+    public void transfer(TransferInfoDto transferInfoDto) throws MoneyTransferringException, InterruptedException {
+        //because of the deadlock possibility the block should be locked in a certain order
         String account1;
         String account2;
         if(transferInfoDto.getFromAccountNumber().compareTo(transferInfoDto.getToAccountNumber()) < 0) {
