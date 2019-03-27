@@ -166,6 +166,8 @@ public class ApplicationTest {
 
     /**
      * Test making testConcurrencyTransfers 100 times
+     * (p.s. you can set value times to 1000 - it takes approximately 9s to execute
+     *  If you set times to too big value, test could fail (because of the fact, that account's balance runs out
      * @throws IOException
      */
     @Test
