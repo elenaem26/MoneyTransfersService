@@ -71,9 +71,10 @@ public class MoneyTransfersService {
     /**
      * Method performs transfer - it withdraws and deposits money
      * and update transfer's state to DONE;
+     * It is used only in {@link MoneyTransferJob}
      * @param transferRecord
      */
-    public void transferInJob(TransferRecord transferRecord) {
+    void transferInJob(TransferRecord transferRecord) {
         //because of the deadlock possibility the block should be locked in a certain order
         log.info(String.format("Trying to transfer from %s to %s, amount = %d",
                 transferRecord.getFromAccountId(), transferRecord.getToAccountId(), transferRecord.getAmount()));
