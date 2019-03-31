@@ -15,7 +15,6 @@ import revolut.bank.dto.OperationType;
 import revolut.bank.dto.TransferHistoriesDto;
 import revolut.bank.dto.TransferHistoryDto;
 import revolut.bank.dto.TransferInfoDto;
-import revolut.bank.utils.token.AccountTokenRegistry;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -78,26 +77,7 @@ public class MoneyTransfersService {
         //because of the deadlock possibility the block should be locked in a certain order
         log.info(String.format("Trying to transfer from %s to %s, amount = %d",
                 transferRecord.getFromAccountId(), transferRecord.getToAccountId(), transferRecord.getAmount()));
-        String account1;
-        String account2;
-        if(transferRecord.getFromAccountId().compareTo(transferRecord.getToAccountId()) < 0) {
-            account1 = transferRecord.getFromAccountId();
-            account2 = transferRecord.getToAccountId();
-        } else {
-            account1 = transferRecord.getToAccountId();
-            account2 = transferRecord.getFromAccountId();
-        }
-
-        try {
-            synchronized (AccountTokenRegistry.register(account1)) {
-                synchronized (AccountTokenRegistry.register(account2)) {
-                    executeTransferQuery(transferRecord);
-                }
-            }
-        } finally {
-            AccountTokenRegistry.deregister(account1);
-            AccountTokenRegistry.deregister(account2);
-        }
+        executeTransferQuery(transferRecord);
     }
 
     /**
