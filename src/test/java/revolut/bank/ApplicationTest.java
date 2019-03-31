@@ -171,7 +171,7 @@ public class ApplicationTest {
                         .build()));
 
         executor.shutdown();
-        final boolean done = executor.awaitTermination(30, TimeUnit.SECONDS);
+        final boolean done = executor.awaitTermination(1, TimeUnit.SECONDS);
         assertTrue(done);
 
         Thread.sleep(4000);
