@@ -12,6 +12,7 @@ import javax.annotation.Generated;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
+import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -41,7 +42,7 @@ import revolut.bank.model.generated.tables.records.OrganizationRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Organization extends TableImpl<OrganizationRecord> {
 
-    private static final long serialVersionUID = 135734536;
+    private static final long serialVersionUID = -1035949482;
 
     /**
      * The reference instance of <code>PUBLIC.ORGANIZATION</code>
@@ -59,7 +60,7 @@ public class Organization extends TableImpl<OrganizationRecord> {
     /**
      * The column <code>PUBLIC.ORGANIZATION.PARTY_ID</code>.
      */
-    public final TableField<OrganizationRecord, Long> PARTY_ID = createField("PARTY_ID", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+    public final TableField<OrganizationRecord, Long> PARTY_ID = createField("PARTY_ID", org.jooq.impl.SQLDataType.BIGINT.nullable(false).identity(true), this, "");
 
     /**
      * The column <code>PUBLIC.ORGANIZATION.NAME</code>.
@@ -124,8 +125,16 @@ public class Organization extends TableImpl<OrganizationRecord> {
      * {@inheritDoc}
      */
     @Override
+    public Identity<OrganizationRecord, Long> getIdentity() {
+        return Keys.IDENTITY_ORGANIZATION;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public UniqueKey<OrganizationRecord> getPrimaryKey() {
-        return Keys.PK_ORGANIZATION;
+        return Keys.CONSTRAINT_D;
     }
 
     /**
@@ -133,7 +142,7 @@ public class Organization extends TableImpl<OrganizationRecord> {
      */
     @Override
     public List<UniqueKey<OrganizationRecord>> getKeys() {
-        return Arrays.<UniqueKey<OrganizationRecord>>asList(Keys.PK_ORGANIZATION);
+        return Arrays.<UniqueKey<OrganizationRecord>>asList(Keys.CONSTRAINT_D);
     }
 
     /**
@@ -141,11 +150,11 @@ public class Organization extends TableImpl<OrganizationRecord> {
      */
     @Override
     public List<ForeignKey<OrganizationRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<OrganizationRecord, ?>>asList(Keys.FK_ORGANIZATION_PARTY);
+        return Arrays.<ForeignKey<OrganizationRecord, ?>>asList(Keys.ORGANIZATION_FK0);
     }
 
     public Party party() {
-        return new Party(this, Keys.FK_ORGANIZATION_PARTY);
+        return new Party(this, Keys.ORGANIZATION_FK0);
     }
 
     /**

@@ -6,8 +6,8 @@ import revolut.bank.h2.DSLContextFactory;
 import revolut.bank.h2.DataSource;
 import revolut.bank.h2.H2DbInitializer;
 import revolut.bank.service.AccountService;
+import revolut.bank.service.MoneyTransferJob;
 import revolut.bank.service.MoneyTransfersService;
-import revolut.bank.utils.token.AccountTokenRegistry;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
@@ -28,6 +28,7 @@ public class ServicesModule extends AbstractModule {
         bind(H2DbInitializer.class).in(Singleton.class);
         bind(MoneyTransfersService.class).in(Singleton.class);
         bind(AccountService.class).in(Singleton.class);
+        bind(MoneyTransferJob.class).in(Singleton.class);
 
         try {
             Properties properties = new Properties();

@@ -42,7 +42,7 @@ import revolut.bank.model.generated.tables.records.PartyRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Party extends TableImpl<PartyRecord> {
 
-    private static final long serialVersionUID = -1987536221;
+    private static final long serialVersionUID = 206376663;
 
     /**
      * The reference instance of <code>PUBLIC.PARTY</code>
@@ -123,7 +123,7 @@ public class Party extends TableImpl<PartyRecord> {
      */
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.FK_PARTY_PARTY_TYPE_INDEX_4, Indexes.PRIMARY_KEY_4);
+        return Arrays.<Index>asList(Indexes.PARTY_FK0_INDEX_4, Indexes.PRIMARY_KEY_4);
     }
 
     /**
@@ -139,7 +139,7 @@ public class Party extends TableImpl<PartyRecord> {
      */
     @Override
     public UniqueKey<PartyRecord> getPrimaryKey() {
-        return Keys.PK_PARTY;
+        return Keys.CONSTRAINT_4;
     }
 
     /**
@@ -147,7 +147,7 @@ public class Party extends TableImpl<PartyRecord> {
      */
     @Override
     public List<UniqueKey<PartyRecord>> getKeys() {
-        return Arrays.<UniqueKey<PartyRecord>>asList(Keys.PK_PARTY);
+        return Arrays.<UniqueKey<PartyRecord>>asList(Keys.CONSTRAINT_4);
     }
 
     /**
@@ -155,11 +155,11 @@ public class Party extends TableImpl<PartyRecord> {
      */
     @Override
     public List<ForeignKey<PartyRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<PartyRecord, ?>>asList(Keys.FK_PARTY_PARTY_TYPE);
+        return Arrays.<ForeignKey<PartyRecord, ?>>asList(Keys.PARTY_FK0);
     }
 
     public PartyType partyType() {
-        return new PartyType(this, Keys.FK_PARTY_PARTY_TYPE);
+        return new PartyType(this, Keys.PARTY_FK0);
     }
 
     /**

@@ -4,6 +4,9 @@ import lombok.*;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Entity for posting while making money transfer
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

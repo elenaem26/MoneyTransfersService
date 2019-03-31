@@ -43,57 +43,63 @@ public class Keys {
     // IDENTITY definitions
     // -------------------------------------------------------------------------
 
+    public static final Identity<OrganizationRecord, Long> IDENTITY_ORGANIZATION = Identities0.IDENTITY_ORGANIZATION;
     public static final Identity<PartyRecord, Long> IDENTITY_PARTY = Identities0.IDENTITY_PARTY;
     public static final Identity<PartyTypeRecord, Long> IDENTITY_PARTY_TYPE = Identities0.IDENTITY_PARTY_TYPE;
+    public static final Identity<PersonRecord, Long> IDENTITY_PERSON = Identities0.IDENTITY_PERSON;
     public static final Identity<TransferRecord, Long> IDENTITY_TRANSFER = Identities0.IDENTITY_TRANSFER;
 
     // -------------------------------------------------------------------------
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final UniqueKey<AccountRecord> PK_ACCOUNT = UniqueKeys0.PK_ACCOUNT;
-    public static final UniqueKey<OrganizationRecord> PK_ORGANIZATION = UniqueKeys0.PK_ORGANIZATION;
-    public static final UniqueKey<PartyRecord> PK_PARTY = UniqueKeys0.PK_PARTY;
-    public static final UniqueKey<PartyTypeRecord> PK_PARTY_TYPE = UniqueKeys0.PK_PARTY_TYPE;
-    public static final UniqueKey<PersonRecord> PK_PERSON = UniqueKeys0.PK_PERSON;
-    public static final UniqueKey<TransferRecord> PK_TRANSFER = UniqueKeys0.PK_TRANSFER;
+    public static final UniqueKey<AccountRecord> CONSTRAINT_E4 = UniqueKeys0.CONSTRAINT_E4;
+    public static final UniqueKey<AccountRecord> CONSTRAINT_E = UniqueKeys0.CONSTRAINT_E;
+    public static final UniqueKey<OrganizationRecord> CONSTRAINT_D = UniqueKeys0.CONSTRAINT_D;
+    public static final UniqueKey<PartyRecord> CONSTRAINT_4 = UniqueKeys0.CONSTRAINT_4;
+    public static final UniqueKey<PartyTypeRecord> CONSTRAINT_3 = UniqueKeys0.CONSTRAINT_3;
+    public static final UniqueKey<PersonRecord> CONSTRAINT_8 = UniqueKeys0.CONSTRAINT_8;
+    public static final UniqueKey<TransferRecord> CONSTRAINT_7 = UniqueKeys0.CONSTRAINT_7;
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final ForeignKey<AccountRecord, PartyRecord> FK_ACCOUNT_PARTY = ForeignKeys0.FK_ACCOUNT_PARTY;
-    public static final ForeignKey<OrganizationRecord, PartyRecord> FK_ORGANIZATION_PARTY = ForeignKeys0.FK_ORGANIZATION_PARTY;
-    public static final ForeignKey<PartyRecord, PartyTypeRecord> FK_PARTY_PARTY_TYPE = ForeignKeys0.FK_PARTY_PARTY_TYPE;
-    public static final ForeignKey<PersonRecord, PartyRecord> FK_PERSON_PARTY = ForeignKeys0.FK_PERSON_PARTY;
-    public static final ForeignKey<TransferRecord, AccountRecord> FK_TRANSFER_ACCOUNT_FROM = ForeignKeys0.FK_TRANSFER_ACCOUNT_FROM;
-    public static final ForeignKey<TransferRecord, AccountRecord> FK_TRANSFER_ACCOUNT_TO = ForeignKeys0.FK_TRANSFER_ACCOUNT_TO;
+    public static final ForeignKey<AccountRecord, PartyRecord> ACCOUNT_FK0 = ForeignKeys0.ACCOUNT_FK0;
+    public static final ForeignKey<OrganizationRecord, PartyRecord> ORGANIZATION_FK0 = ForeignKeys0.ORGANIZATION_FK0;
+    public static final ForeignKey<PartyRecord, PartyTypeRecord> PARTY_FK0 = ForeignKeys0.PARTY_FK0;
+    public static final ForeignKey<PersonRecord, PartyRecord> PERSON_FK0 = ForeignKeys0.PERSON_FK0;
+    public static final ForeignKey<TransferRecord, AccountRecord> TRANSFER_FK0 = ForeignKeys0.TRANSFER_FK0;
+    public static final ForeignKey<TransferRecord, AccountRecord> TRANSFER_FK1 = ForeignKeys0.TRANSFER_FK1;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
     // -------------------------------------------------------------------------
 
     private static class Identities0 {
+        public static Identity<OrganizationRecord, Long> IDENTITY_ORGANIZATION = Internal.createIdentity(Organization.ORGANIZATION, Organization.ORGANIZATION.PARTY_ID);
         public static Identity<PartyRecord, Long> IDENTITY_PARTY = Internal.createIdentity(Party.PARTY, Party.PARTY.ID);
         public static Identity<PartyTypeRecord, Long> IDENTITY_PARTY_TYPE = Internal.createIdentity(PartyType.PARTY_TYPE, PartyType.PARTY_TYPE.ID);
+        public static Identity<PersonRecord, Long> IDENTITY_PERSON = Internal.createIdentity(Person.PERSON, Person.PERSON.PARTY_ID);
         public static Identity<TransferRecord, Long> IDENTITY_TRANSFER = Internal.createIdentity(Transfer.TRANSFER, Transfer.TRANSFER.ID);
     }
 
     private static class UniqueKeys0 {
-        public static final UniqueKey<AccountRecord> PK_ACCOUNT = Internal.createUniqueKey(Account.ACCOUNT, "PK_ACCOUNT", Account.ACCOUNT.NUMBER);
-        public static final UniqueKey<OrganizationRecord> PK_ORGANIZATION = Internal.createUniqueKey(Organization.ORGANIZATION, "PK_ORGANIZATION", Organization.ORGANIZATION.PARTY_ID);
-        public static final UniqueKey<PartyRecord> PK_PARTY = Internal.createUniqueKey(Party.PARTY, "PK_PARTY", Party.PARTY.ID);
-        public static final UniqueKey<PartyTypeRecord> PK_PARTY_TYPE = Internal.createUniqueKey(PartyType.PARTY_TYPE, "PK_PARTY_TYPE", PartyType.PARTY_TYPE.ID);
-        public static final UniqueKey<PersonRecord> PK_PERSON = Internal.createUniqueKey(Person.PERSON, "PK_PERSON", Person.PERSON.PARTY_ID);
-        public static final UniqueKey<TransferRecord> PK_TRANSFER = Internal.createUniqueKey(Transfer.TRANSFER, "PK_TRANSFER", Transfer.TRANSFER.ID);
+        public static final UniqueKey<AccountRecord> CONSTRAINT_E4 = Internal.createUniqueKey(Account.ACCOUNT, "CONSTRAINT_E4", Account.ACCOUNT.NUMBER);
+        public static final UniqueKey<AccountRecord> CONSTRAINT_E = Internal.createUniqueKey(Account.ACCOUNT, "CONSTRAINT_E", Account.ACCOUNT.NUMBER);
+        public static final UniqueKey<OrganizationRecord> CONSTRAINT_D = Internal.createUniqueKey(Organization.ORGANIZATION, "CONSTRAINT_D", Organization.ORGANIZATION.PARTY_ID);
+        public static final UniqueKey<PartyRecord> CONSTRAINT_4 = Internal.createUniqueKey(Party.PARTY, "CONSTRAINT_4", Party.PARTY.ID);
+        public static final UniqueKey<PartyTypeRecord> CONSTRAINT_3 = Internal.createUniqueKey(PartyType.PARTY_TYPE, "CONSTRAINT_3", PartyType.PARTY_TYPE.ID);
+        public static final UniqueKey<PersonRecord> CONSTRAINT_8 = Internal.createUniqueKey(Person.PERSON, "CONSTRAINT_8", Person.PERSON.PARTY_ID);
+        public static final UniqueKey<TransferRecord> CONSTRAINT_7 = Internal.createUniqueKey(Transfer.TRANSFER, "CONSTRAINT_7", Transfer.TRANSFER.ID);
     }
 
     private static class ForeignKeys0 {
-        public static final ForeignKey<AccountRecord, PartyRecord> FK_ACCOUNT_PARTY = Internal.createForeignKey(revolut.bank.model.generated.Keys.PK_PARTY, Account.ACCOUNT, "FK_ACCOUNT_PARTY", Account.ACCOUNT.PARTY_ID);
-        public static final ForeignKey<OrganizationRecord, PartyRecord> FK_ORGANIZATION_PARTY = Internal.createForeignKey(revolut.bank.model.generated.Keys.PK_PARTY, Organization.ORGANIZATION, "FK_ORGANIZATION_PARTY", Organization.ORGANIZATION.PARTY_ID);
-        public static final ForeignKey<PartyRecord, PartyTypeRecord> FK_PARTY_PARTY_TYPE = Internal.createForeignKey(revolut.bank.model.generated.Keys.PK_PARTY_TYPE, Party.PARTY, "FK_PARTY_PARTY_TYPE", Party.PARTY.PARTY_TYPE_ID);
-        public static final ForeignKey<PersonRecord, PartyRecord> FK_PERSON_PARTY = Internal.createForeignKey(revolut.bank.model.generated.Keys.PK_PARTY, Person.PERSON, "FK_PERSON_PARTY", Person.PERSON.PARTY_ID);
-        public static final ForeignKey<TransferRecord, AccountRecord> FK_TRANSFER_ACCOUNT_FROM = Internal.createForeignKey(revolut.bank.model.generated.Keys.PK_ACCOUNT, Transfer.TRANSFER, "FK_TRANSFER_ACCOUNT_FROM", Transfer.TRANSFER.FROM_ACCOUNT_ID);
-        public static final ForeignKey<TransferRecord, AccountRecord> FK_TRANSFER_ACCOUNT_TO = Internal.createForeignKey(revolut.bank.model.generated.Keys.PK_ACCOUNT, Transfer.TRANSFER, "FK_TRANSFER_ACCOUNT_TO", Transfer.TRANSFER.TO_ACCOUNT_ID);
+        public static final ForeignKey<AccountRecord, PartyRecord> ACCOUNT_FK0 = Internal.createForeignKey(revolut.bank.model.generated.Keys.CONSTRAINT_4, Account.ACCOUNT, "ACCOUNT_FK0", Account.ACCOUNT.PARTY_ID);
+        public static final ForeignKey<OrganizationRecord, PartyRecord> ORGANIZATION_FK0 = Internal.createForeignKey(revolut.bank.model.generated.Keys.CONSTRAINT_4, Organization.ORGANIZATION, "ORGANIZATION_FK0", Organization.ORGANIZATION.PARTY_ID);
+        public static final ForeignKey<PartyRecord, PartyTypeRecord> PARTY_FK0 = Internal.createForeignKey(revolut.bank.model.generated.Keys.CONSTRAINT_3, Party.PARTY, "PARTY_FK0", Party.PARTY.PARTY_TYPE_ID);
+        public static final ForeignKey<PersonRecord, PartyRecord> PERSON_FK0 = Internal.createForeignKey(revolut.bank.model.generated.Keys.CONSTRAINT_4, Person.PERSON, "PERSON_FK0", Person.PERSON.PARTY_ID);
+        public static final ForeignKey<TransferRecord, AccountRecord> TRANSFER_FK0 = Internal.createForeignKey(revolut.bank.model.generated.Keys.CONSTRAINT_E, Transfer.TRANSFER, "TRANSFER_FK0", Transfer.TRANSFER.FROM_ACCOUNT_ID);
+        public static final ForeignKey<TransferRecord, AccountRecord> TRANSFER_FK1 = Internal.createForeignKey(revolut.bank.model.generated.Keys.CONSTRAINT_E, Transfer.TRANSFER, "TRANSFER_FK1", Transfer.TRANSFER.TO_ACCOUNT_ID);
     }
 }

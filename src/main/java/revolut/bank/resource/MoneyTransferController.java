@@ -3,7 +3,6 @@ package revolut.bank.resource;
 import org.apache.log4j.Logger;
 import revolut.bank.dto.TransferHistoriesDto;
 import revolut.bank.dto.TransferInfoDto;
-import revolut.bank.exception.MoneyTransferringException;
 import revolut.bank.service.MoneyTransfersService;
 import com.google.inject.Inject;
 import com.google.inject.servlet.RequestScoped;
@@ -24,7 +23,7 @@ public class MoneyTransferController {
     @POST
     @Path("")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response transfer(TransferInfoDto transferInfoDto) throws MoneyTransferringException, InterruptedException {
+    public Response transfer(TransferInfoDto transferInfoDto) {
         log.info("POST transfer " + transferInfoDto);
         moneyTransfersService.transfer(transferInfoDto);
         return Response.status(Response.Status.OK).build();

@@ -2,7 +2,7 @@ package revolut.bank.service;
 
 import revolut.bank.exception.MoneyTransferringException;
 import revolut.bank.h2.DSLContextFactory;
-import revolut.bank.utils.token.AccountTokenRegistry;
+import revolut.bank.model.TransferStatus;
 import revolut.bank.utils.DateUtils;
 import com.google.inject.Inject;
 import org.apache.log4j.Logger;
@@ -15,10 +15,12 @@ import revolut.bank.dto.OperationType;
 import revolut.bank.dto.TransferHistoriesDto;
 import revolut.bank.dto.TransferHistoryDto;
 import revolut.bank.dto.TransferInfoDto;
+import revolut.bank.utils.token.AccountTokenRegistry;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static revolut.bank.model.generated.tables.Account.ACCOUNT;
@@ -28,6 +30,9 @@ public class MoneyTransfersService {
 
     @Inject
     private DSLContextFactory dslContextFactory;
+
+    @Inject
+    private MoneyTransferJob moneyTransferJob;
 
     private static final Logger log = Logger.getLogger(MoneyTransfersService.class);
 
@@ -55,22 +60,38 @@ public class MoneyTransfersService {
         return conditions;
     }
 
-    public void transfer(TransferInfoDto transferInfoDto) throws MoneyTransferringException, InterruptedException {
+    /**
+     * Methods creates new Transfer with INPROGRESS state
+     * @param transferInfoDto
+     */
+    public void transfer(TransferInfoDto transferInfoDto) {
+        validateTransferInfoDto(transferInfoDto);
+        createTransfer(transferInfoDto);
+    }
+
+    /**
+     * Method performs transfer - it withdraws and deposits money
+     * and update transfer's state to DONE;
+     * @param transferRecord
+     */
+    public void transferInJob(TransferRecord transferRecord) {
         //because of the deadlock possibility the block should be locked in a certain order
+        log.info(String.format("Trying to transfer from %s to %s, amount = %d",
+                transferRecord.getFromAccountId(), transferRecord.getToAccountId(), transferRecord.getAmount()));
         String account1;
         String account2;
-        if(transferInfoDto.getFromAccountNumber().compareTo(transferInfoDto.getToAccountNumber()) < 0) {
-            account1 = transferInfoDto.getFromAccountNumber();
-            account2 = transferInfoDto.getToAccountNumber();
+        if(transferRecord.getFromAccountId().compareTo(transferRecord.getToAccountId()) < 0) {
+            account1 = transferRecord.getFromAccountId();
+            account2 = transferRecord.getToAccountId();
         } else {
-            account1 = transferInfoDto.getToAccountNumber();
-            account2 = transferInfoDto.getFromAccountNumber();
+            account1 = transferRecord.getToAccountId();
+            account2 = transferRecord.getFromAccountId();
         }
 
         try {
             synchronized (AccountTokenRegistry.register(account1)) {
                 synchronized (AccountTokenRegistry.register(account2)) {
-                    executeTransferQuery(transferInfoDto);
+                    executeTransferQuery(transferRecord);
                 }
             }
         } finally {
@@ -79,14 +100,33 @@ public class MoneyTransfersService {
         }
     }
 
-    private void executeTransferQuery(TransferInfoDto transferInfoDto) {
-        validateTransferInfoDto(transferInfoDto);
+    /**
+     * Get all transfers which state is INPROGRESS
+     * @return
+     */
+    public Collection<TransferRecord> getInprogressTransfers() {
+        return dslContextFactory.getContext()
+                .selectFrom(TRANSFER)
+                .where(TRANSFER.STATE.eq(TransferStatus.INPROGRESS.name()))
+                .orderBy(TRANSFER.TIMESTAMP.asc())
+                .fetch(record -> record);
+    }
+
+    private void executeTransferQuery(TransferRecord transferRecord) {
         DSLContext context = dslContextFactory.getContext();
-        context.transaction(configuration -> {
-            withdrawMoney(transferInfoDto.getFromAccountNumber(), transferInfoDto.getAmount(), configuration);
-            depositMoney(transferInfoDto.getToAccountNumber(), transferInfoDto.getAmount(), configuration);
-            createTransfer(transferInfoDto, configuration);
-        });
+        try {
+            context.transaction(configuration -> {
+                withdrawMoney(transferRecord.getFromAccountId(), transferRecord.getAmount(), configuration);
+                depositMoney(transferRecord.getToAccountId(), transferRecord.getAmount(), configuration);
+                markTransferDone(transferRecord, configuration);
+            });
+            log.info(String.format("Transfer succeed: from %s to %s, amount = %d",
+                    transferRecord.getFromAccountId(), transferRecord.getToAccountId(), transferRecord.getAmount()));
+        } catch (Exception ex) {
+            markTransferError(transferRecord);
+            log.info(String.format("Transfer error: from %s to %s, amount = %d",
+                    transferRecord.getFromAccountId(), transferRecord.getToAccountId(), transferRecord.getAmount()));
+        }
     }
 
     private void validateTransferInfoDto(TransferInfoDto transferInfoDto) {
@@ -101,6 +141,17 @@ public class MoneyTransfersService {
         }
         if (transferInfoDto.getFromAccountNumber().equals(transferInfoDto.getToAccountNumber())) {
             throw new IllegalArgumentException("From account and to account are the same ");
+        }
+        Record1<Long> balance = dslContextFactory.getContext()
+                .select(ACCOUNT.BALANCE)
+                .from(ACCOUNT)
+                .where(ACCOUNT.NUMBER.eq(transferInfoDto.getFromAccountNumber()))
+                .fetchOne();
+        if (balance == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
+        if (balance.value1() < transferInfoDto.getAmount()) {
+            throw new IllegalArgumentException("Not enough money");
         }
     }
 
@@ -117,7 +168,7 @@ public class MoneyTransfersService {
         record.store();
     }
 
-    private void depositMoney(String accountNumber, Long amount, Configuration configuration) throws MoneyTransferringException {
+    private void depositMoney(String accountNumber, Long amount, Configuration configuration) {
         AccountRecord record = DSL.using(configuration).selectFrom(ACCOUNT).where(ACCOUNT.NUMBER.eq(accountNumber)).fetchOne();
         if (record == null) {
             throw new IllegalArgumentException("Account not found");
@@ -127,20 +178,41 @@ public class MoneyTransfersService {
         record.store();
     }
 
-    private void createTransfer(TransferInfoDto transferInfoDto, Configuration configuration) {
-        TransferRecord transfer = DSL.using(configuration).newRecord(TRANSFER);
+    private void createTransfer(TransferInfoDto transferInfoDto) {
+        TransferRecord transfer = dslContextFactory.getContext().newRecord(TRANSFER);
         transfer.setFromAccountId(transferInfoDto.getFromAccountNumber());
         transfer.setToAccountId(transferInfoDto.getToAccountNumber());
         transfer.setAmount(transferInfoDto.getAmount());
-        transfer.setTimestamp(Timestamp.valueOf(LocalDateTime.now()));
+        transfer.setState(TransferStatus.INPROGRESS.name());
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        transfer.setTimestamp(now);
         transfer.store();
     }
 
-    private TransferHistoryDto mapHistoryTransfer(TransferRecord transferRecord, String currentAccountNumber) {
-        return mapHistoryTransfer(transferRecord.getFromAccountId(), transferRecord.getToAccountId(), transferRecord.getTimestamp(), transferRecord.getAmount(), currentAccountNumber);
+    private void markTransferDone(TransferRecord record, Configuration configuration) {
+        TransferRecord recordInTransacion = DSL.using(configuration)
+                .selectFrom(TRANSFER)
+                .where(TRANSFER.ID.eq(record.getId()))
+                .fetchOne();
+        recordInTransacion.setState(TransferStatus.DONE.name());
+        recordInTransacion.store();
     }
 
-    private TransferHistoryDto mapHistoryTransfer(String fromAccountId, String toAccountId, Timestamp timestamp, Long amount, String currentAccountNumber) {
+    private void markTransferError(TransferRecord record) {
+        dslContextFactory.getContext()
+                .update(TRANSFER)
+                .set(TRANSFER.STATE, TransferStatus.ERROR.name())
+                .where(TRANSFER.ID.eq(record.getId()));
+    }
+
+    private TransferHistoryDto mapHistoryTransfer(TransferRecord transferRecord, String currentAccountNumber) {
+        return mapHistoryTransfer(transferRecord.getFromAccountId(), transferRecord.getToAccountId(),
+                transferRecord.getTimestamp(), transferRecord.getAmount(),
+                transferRecord.getState(), currentAccountNumber);
+    }
+
+    private TransferHistoryDto mapHistoryTransfer(String fromAccountId, String toAccountId,
+                                                  Timestamp timestamp, Long amount, String state, String currentAccountNumber) {
         OperationType operationType;
         String interactionAccountNumber;
         if (fromAccountId.equals(currentAccountNumber)) {
@@ -156,6 +228,7 @@ public class MoneyTransfersService {
                 .amount(amount)
                 .operation(operationType.name())
                 .timestamp(DateUtils.map(timestamp))
+                .state(state)
                 .build();
     }
 

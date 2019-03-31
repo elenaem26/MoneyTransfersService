@@ -4,6 +4,9 @@ import lombok.*;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Entity for one money transfer
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -17,4 +20,5 @@ public class TransferHistoryDto {
     private String operation;
     private Long amount;
     private String timestamp;
+    private String state;
 }

@@ -8,6 +8,7 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import revolut.bank.model.TransferStatus;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -41,10 +42,39 @@ public class ApplicationTest {
      * @throws IOException
      */
     @Test
-    public void testOneTransfer() throws IOException {
+    public void testOneTransfer() throws IOException, InterruptedException {
         Client client = Client.create( new DefaultClientConfig() );
         WebResource service = client.resource(TestUtils.getBaseURI());
-        testOneTransfer(service, "456", "567", 19999);
+        String from = "456";
+        String to = "567";
+        int amount = 19999;
+
+        ClientResponse resp = service.path(ACCOUNTS_PATH).path(from)
+                .accept(MediaType.APPLICATION_JSON)
+                .get(ClientResponse.class);
+        AccountDto accountFromBefore = resp.getEntity(AccountDto.class);
+
+        resp = service.path(ACCOUNTS_PATH).path(to)
+                .accept(MediaType.APPLICATION_JSON)
+                .get(ClientResponse.class);
+        AccountDto accountToBefore = resp.getEntity(AccountDto.class);
+
+        makeOneTransfer(service, from, to, amount);
+
+        Thread.sleep(2300);
+
+        resp = service.path(ACCOUNTS_PATH).path(from)
+                .accept(MediaType.APPLICATION_JSON)
+                .get(ClientResponse.class);
+        AccountDto accountFromAfter = resp.getEntity(AccountDto.class);
+
+        resp = service.path(ACCOUNTS_PATH).path(to)
+                .accept(MediaType.APPLICATION_JSON)
+                .get(ClientResponse.class);
+        AccountDto accountToAfter= resp.getEntity(AccountDto.class);
+
+        assertEquals(accountFromBefore.getBalance() - amount, (long)accountFromAfter.getBalance());
+        assertEquals(accountToBefore.getBalance() + amount, (long)accountToAfter.getBalance());
     }
 
     /**
@@ -52,7 +82,7 @@ public class ApplicationTest {
      * @throws IOException
      */
     @Test
-    public void test1000Transfers() throws IOException {
+    public void test1000Transfers() throws IOException, InterruptedException {
         Client client = Client.create( new DefaultClientConfig() );
         WebResource service = client.resource(TestUtils.getBaseURI());
         String fromNumber = "3465";
@@ -144,6 +174,8 @@ public class ApplicationTest {
         final boolean done = executor.awaitTermination(30, TimeUnit.SECONDS);
         assertTrue(done);
 
+        Thread.sleep(4000);
+
         resp = service.path(ACCOUNTS_PATH).path(account1)
                 .accept(MediaType.APPLICATION_JSON)
                 .get(ClientResponse.class);
@@ -164,141 +196,33 @@ public class ApplicationTest {
         assertEquals(account3Before.getBalance() + 541 + 5416 , (long)account3After.getBalance());
     }
 
-    /**
-     * Test making testConcurrencyTransfers 100 times
-     * (p.s. you can set value times to 1000 - it takes approximately 9s to execute
-     *  If you set times to too big value, test could fail (because of the fact, that account's balance runs out
-     * @throws IOException
-     */
     @Test
-    public void testConcurrentTransfers100Times() throws IOException, InterruptedException {
-        Client client = Client.create( new DefaultClientConfig() );
-        WebResource service = client.resource(TestUtils.getBaseURI());
-
-        String account1 = "3465";
-        String account2 = "345";
-        String account3 = "123";
-
-        int times = 100;
-
-        ClientResponse resp = service.path(ACCOUNTS_PATH).path(account1)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto account1Before = resp.getEntity(AccountDto.class);
-
-        resp = service.path(ACCOUNTS_PATH).path(account2)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto account2Before = resp.getEntity(AccountDto.class);
-
-        resp = service.path(ACCOUNTS_PATH).path(account3)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto account3Before = resp.getEntity(AccountDto.class);
-
-
-        ExecutorService executor = Executors.newFixedThreadPool(50);
-        for (int i = 0; i < times; i++) {
-            makeConcurrentTransfers(service, executor, account1, account2, account3);
-        }
-
-        executor.shutdown();
-        final boolean done = executor.awaitTermination(30, TimeUnit.SECONDS);
-        assertTrue(done);
-
-        resp = service.path(ACCOUNTS_PATH).path(account1)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto account1After = resp.getEntity(AccountDto.class);
-
-        resp = service.path(ACCOUNTS_PATH).path(account2)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto account2After = resp.getEntity(AccountDto.class);
-
-        resp = service.path(ACCOUNTS_PATH).path(account3)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto account3After = resp.getEntity(AccountDto.class);
-
-        assertEquals(account1Before.getBalance() + (- 156 - 1126 + 546 - 5416) * times, (long)account1After.getBalance());
-        assertEquals(account2Before.getBalance() + (156 + 1126 - 546 - 541) * times, (long)account2After.getBalance());
-        assertEquals(account3Before.getBalance() + (541 + 5416) * times , (long)account3After.getBalance());
-    }
-
-    private void makeConcurrentTransfers(WebResource service, ExecutorService executor, String account1, String account2, String account3) throws InterruptedException {
-        executor.execute(() -> service.path(MONEY_TRANSFER_PATH)
-                .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON)
-                .post(ClientResponse.class, TransferInfoDto.builder()
-                        .fromAccountNumber(account1)
-                        .toAccountNumber(account2)
-                        .amount(156L)
-                        .build()));
-
-        executor.execute(() -> service.path(MONEY_TRANSFER_PATH)
-                .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON)
-                .post(ClientResponse.class, TransferInfoDto.builder()
-                        .fromAccountNumber(account1)
-                        .toAccountNumber(account2)
-                        .amount(1126L)
-                        .build()));
-
-
-        executor.execute(() -> service.path(MONEY_TRANSFER_PATH)
-                .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON)
-                .post(ClientResponse.class, TransferInfoDto.builder()
-                        .fromAccountNumber(account2)
-                        .toAccountNumber(account1)
-                        .amount(546L)
-                        .build()));
-
-        executor.execute(() -> service.path(MONEY_TRANSFER_PATH)
-                .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON)
-                .post(ClientResponse.class, TransferInfoDto.builder()
-                        .fromAccountNumber(account2)
-                        .toAccountNumber(account3)
-                        .amount(541L)
-                        .build()));
-
-        executor.execute(() -> service.path(MONEY_TRANSFER_PATH)
-                .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON)
-                .post(ClientResponse.class, TransferInfoDto.builder()
-                        .fromAccountNumber(account1)
-                        .toAccountNumber(account3)
-                        .amount(5416L)
-                        .build()));
-    }
-
-    @Test
-    public void testFailedTransfer() throws IOException {
+    public void testFailedTransfer() {
         Client client = Client.create( new DefaultClientConfig() );
         WebResource service = client.resource(TestUtils.getBaseURI());
         ClientResponse resp = service.path(MONEY_TRANSFER_PATH)
                 .accept(MediaType.APPLICATION_JSON)
                 .type(MediaType.APPLICATION_JSON)
                 .post(ClientResponse.class, TransferInfoDto.builder()
-                        .fromAccountNumber("789")
+                        .fromAccountNumber("123")
                         .toAccountNumber("234")
                         .amount(120000L)
                         .build());
         ErrorMessage errorMessage = resp.getEntity(ErrorMessage.class);
-        assertEquals(errorMessage.getStatus(), 500);
-        assertEquals(errorMessage.getDetailedMessage(), "Not enough money");
+        assertEquals(400, errorMessage.getStatus());
+        assertEquals("Not enough money", errorMessage.getMessage());
     }
 
     @Test
-    public void testTransferHistory() throws IOException {
+    public void testTransferHistory() throws IOException, InterruptedException {
         Client client = Client.create( new DefaultClientConfig() );
         WebResource service = client.resource(TestUtils.getBaseURI());
-        testOneTransfer(service, "2345", "678", 1);
-        testOneTransfer(service, "2345", "567", 2);
-        testOneTransfer(service, "678", "2345", 3);
-        testOneTransfer(service, "678", "567", 3);
+        makeOneTransfer(service, "2345", "678", 1);
+        makeOneTransfer(service, "2345", "567", 2);
+        makeOneTransfer(service, "678", "2345", 3);
+        makeOneTransfer(service, "678", "567", 3);
+
+        Thread.sleep(3000);
 
         ClientResponse resp = service.path(MONEY_TRANSFER_PATH).path("history").path("2345")
                 .accept(MediaType.APPLICATION_JSON)
@@ -309,20 +233,23 @@ public class ApplicationTest {
         assertEquals("2345", history.getHistory().get(0).getUserAccountNumber());
         assertEquals("678", history.getHistory().get(0).getInteractionAccountNumber());
         assertEquals(3, (long)history.getHistory().get(0).getAmount());
+        assertEquals(TransferStatus.DONE.name(), history.getHistory().get(0).getState());
         assertEquals(OperationType.DEPOSIT.name(), history.getHistory().get(0).getOperation());
 
         assertEquals("2345", history.getHistory().get(1).getUserAccountNumber());
         assertEquals("567", history.getHistory().get(1).getInteractionAccountNumber());
         assertEquals(2, (long)history.getHistory().get(1).getAmount());
+        assertEquals(TransferStatus.DONE.name(), history.getHistory().get(1).getState());
         assertEquals(OperationType.WITHDRAW.name(), history.getHistory().get(1).getOperation());
 
         assertEquals("2345", history.getHistory().get(2).getUserAccountNumber());
         assertEquals("678", history.getHistory().get(2).getInteractionAccountNumber());
         assertEquals(1, (long)history.getHistory().get(2).getAmount());
+        assertEquals(TransferStatus.DONE.name(), history.getHistory().get(2).getState());
         assertEquals(OperationType.WITHDRAW.name(), history.getHistory().get(2).getOperation());
     }
 
-    private void testMultipleTransfers(WebResource service, String from, String to, long amount, int times) {
+    private void testMultipleTransfers(WebResource service, String from, String to, long amount, int times) throws InterruptedException {
         ClientResponse resp = service.path(ACCOUNTS_PATH).path(from)
                 .accept(MediaType.APPLICATION_JSON)
                 .get(ClientResponse.class);
@@ -334,8 +261,10 @@ public class ApplicationTest {
         AccountDto accountToBefore = resp.getEntity(AccountDto.class);
 
         for (int i = 0; i < times; i ++) {
-            testOneTransfer(service, from, to, amount);
+            makeOneTransfer(service, from, to, amount);
         }
+
+        Thread.sleep(4000);
 
         resp = service.path(ACCOUNTS_PATH).path(from)
                 .accept(MediaType.APPLICATION_JSON)
@@ -351,18 +280,8 @@ public class ApplicationTest {
         assertEquals(accountToBefore.getBalance() + amount * times, (long)accountToAfter.getBalance());
     }
 
-    private void testOneTransfer(WebResource service, String from ,String to, long amount) {
-        ClientResponse resp = service.path(ACCOUNTS_PATH).path(from)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto accountFromBefore = resp.getEntity(AccountDto.class);
-
-        resp = service.path(ACCOUNTS_PATH).path(to)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto accountToBefore = resp.getEntity(AccountDto.class);
-
-        resp = service.path(MONEY_TRANSFER_PATH)
+    private void makeOneTransfer(WebResource service, String from , String to, long amount) throws InterruptedException {
+        ClientResponse resp = service.path(MONEY_TRANSFER_PATH)
                 .accept(MediaType.APPLICATION_JSON)
                 .type(MediaType.APPLICATION_JSON)
                 .post(ClientResponse.class, TransferInfoDto.builder()
@@ -371,19 +290,6 @@ public class ApplicationTest {
                         .amount(amount)
                         .build());
         assertEquals(resp.getStatus(), 200);
-
-        resp = service.path(ACCOUNTS_PATH).path(from)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto accountFromAfter = resp.getEntity(AccountDto.class);
-
-        resp = service.path(ACCOUNTS_PATH).path(to)
-                .accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-        AccountDto accountToAfter= resp.getEntity(AccountDto.class);
-
-        assertEquals(accountFromBefore.getBalance() - amount, (long)accountFromAfter.getBalance());
-        assertEquals(accountToBefore.getBalance() + amount, (long)accountToAfter.getBalance());
     }
 
     //Accounts

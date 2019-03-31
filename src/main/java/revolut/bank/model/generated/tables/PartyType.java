@@ -41,7 +41,7 @@ import revolut.bank.model.generated.tables.records.PartyTypeRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class PartyType extends TableImpl<PartyTypeRecord> {
 
-    private static final long serialVersionUID = -2087597121;
+    private static final long serialVersionUID = -125035636;
 
     /**
      * The reference instance of <code>PUBLIC.PARTY_TYPE</code>
@@ -64,7 +64,7 @@ public class PartyType extends TableImpl<PartyTypeRecord> {
     /**
      * The column <code>PUBLIC.PARTY_TYPE.NAME</code>.
      */
-    public final TableField<PartyTypeRecord, String> NAME = createField("NAME", org.jooq.impl.SQLDataType.VARCHAR(255).nullable(false), this, "");
+    public final TableField<PartyTypeRecord, String> NAME = createField("NAME", org.jooq.impl.SQLDataType.VARCHAR(255).nullable(false).identity(true), this, "");
 
     /**
      * Create a <code>PUBLIC.PARTY_TYPE</code> table reference
@@ -128,7 +128,7 @@ public class PartyType extends TableImpl<PartyTypeRecord> {
      */
     @Override
     public UniqueKey<PartyTypeRecord> getPrimaryKey() {
-        return Keys.PK_PARTY_TYPE;
+        return Keys.CONSTRAINT_3;
     }
 
     /**
@@ -136,7 +136,7 @@ public class PartyType extends TableImpl<PartyTypeRecord> {
      */
     @Override
     public List<UniqueKey<PartyTypeRecord>> getKeys() {
-        return Arrays.<UniqueKey<PartyTypeRecord>>asList(Keys.PK_PARTY_TYPE);
+        return Arrays.<UniqueKey<PartyTypeRecord>>asList(Keys.CONSTRAINT_3);
     }
 
     /**

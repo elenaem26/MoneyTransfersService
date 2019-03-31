@@ -42,7 +42,7 @@ import revolut.bank.model.generated.tables.records.TransferRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Transfer extends TableImpl<TransferRecord> {
 
-    private static final long serialVersionUID = -1111812730;
+    private static final long serialVersionUID = 1684573223;
 
     /**
      * The reference instance of <code>PUBLIC.TRANSFER</code>
@@ -73,14 +73,19 @@ public class Transfer extends TableImpl<TransferRecord> {
     public final TableField<TransferRecord, String> TO_ACCOUNT_ID = createField("TO_ACCOUNT_ID", org.jooq.impl.SQLDataType.VARCHAR(255).nullable(false), this, "");
 
     /**
-     * The column <code>PUBLIC.TRANSFER.TIMESTAMP</code>.
-     */
-    public final TableField<TransferRecord, Timestamp> TIMESTAMP = createField("TIMESTAMP", org.jooq.impl.SQLDataType.TIMESTAMP.precision(10).nullable(false), this, "");
-
-    /**
      * The column <code>PUBLIC.TRANSFER.AMOUNT</code>.
      */
     public final TableField<TransferRecord, Long> AMOUNT = createField("AMOUNT", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+    /**
+     * The column <code>PUBLIC.TRANSFER.STATE</code>.
+     */
+    public final TableField<TransferRecord, String> STATE = createField("STATE", org.jooq.impl.SQLDataType.VARCHAR(50).nullable(false), this, "");
+
+    /**
+     * The column <code>PUBLIC.TRANSFER.TIMESTAMP</code>.
+     */
+    public final TableField<TransferRecord, Timestamp> TIMESTAMP = createField("TIMESTAMP", org.jooq.impl.SQLDataType.TIMESTAMP.precision(10).nullable(false), this, "");
 
     /**
      * Create a <code>PUBLIC.TRANSFER</code> table reference
@@ -128,7 +133,7 @@ public class Transfer extends TableImpl<TransferRecord> {
      */
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.FK_TRANSFER_ACCOUNT_FROM_INDEX_7, Indexes.FK_TRANSFER_ACCOUNT_TO_INDEX_7, Indexes.PRIMARY_KEY_7);
+        return Arrays.<Index>asList(Indexes.PRIMARY_KEY_7, Indexes.TRANSFER_FK0_INDEX_7, Indexes.TRANSFER_FK1_INDEX_7);
     }
 
     /**
@@ -144,7 +149,7 @@ public class Transfer extends TableImpl<TransferRecord> {
      */
     @Override
     public UniqueKey<TransferRecord> getPrimaryKey() {
-        return Keys.PK_TRANSFER;
+        return Keys.CONSTRAINT_7;
     }
 
     /**
@@ -152,7 +157,7 @@ public class Transfer extends TableImpl<TransferRecord> {
      */
     @Override
     public List<UniqueKey<TransferRecord>> getKeys() {
-        return Arrays.<UniqueKey<TransferRecord>>asList(Keys.PK_TRANSFER);
+        return Arrays.<UniqueKey<TransferRecord>>asList(Keys.CONSTRAINT_7);
     }
 
     /**
@@ -160,15 +165,15 @@ public class Transfer extends TableImpl<TransferRecord> {
      */
     @Override
     public List<ForeignKey<TransferRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<TransferRecord, ?>>asList(Keys.FK_TRANSFER_ACCOUNT_FROM, Keys.FK_TRANSFER_ACCOUNT_TO);
+        return Arrays.<ForeignKey<TransferRecord, ?>>asList(Keys.TRANSFER_FK0, Keys.TRANSFER_FK1);
     }
 
-    public Account fkTransferAccountFrom() {
-        return new Account(this, Keys.FK_TRANSFER_ACCOUNT_FROM);
+    public Account transferFk0() {
+        return new Account(this, Keys.TRANSFER_FK0);
     }
 
-    public Account fkTransferAccountTo() {
-        return new Account(this, Keys.FK_TRANSFER_ACCOUNT_TO);
+    public Account transferFk1() {
+        return new Account(this, Keys.TRANSFER_FK1);
     }
 
     /**

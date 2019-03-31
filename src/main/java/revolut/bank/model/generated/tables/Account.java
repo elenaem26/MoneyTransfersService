@@ -41,7 +41,7 @@ import revolut.bank.model.generated.tables.records.AccountRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Account extends TableImpl<AccountRecord> {
 
-    private static final long serialVersionUID = 505962389;
+    private static final long serialVersionUID = 614240075;
 
     /**
      * The reference instance of <code>PUBLIC.ACCOUNT</code>
@@ -62,6 +62,11 @@ public class Account extends TableImpl<AccountRecord> {
     public final TableField<AccountRecord, String> NUMBER = createField("NUMBER", org.jooq.impl.SQLDataType.VARCHAR(255).nullable(false), this, "");
 
     /**
+     * The column <code>PUBLIC.ACCOUNT.PARTY_ID</code>.
+     */
+    public final TableField<AccountRecord, Long> PARTY_ID = createField("PARTY_ID", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+    /**
      * The column <code>PUBLIC.ACCOUNT.CREATED_DATE_IME</code>.
      */
     public final TableField<AccountRecord, Timestamp> CREATED_DATE_IME = createField("CREATED_DATE_IME", org.jooq.impl.SQLDataType.TIMESTAMP.precision(10).nullable(false), this, "");
@@ -75,11 +80,6 @@ public class Account extends TableImpl<AccountRecord> {
      * The column <code>PUBLIC.ACCOUNT.BALANCE</code>.
      */
     public final TableField<AccountRecord, Long> BALANCE = createField("BALANCE", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
-
-    /**
-     * The column <code>PUBLIC.ACCOUNT.PARTY_ID</code>.
-     */
-    public final TableField<AccountRecord, Long> PARTY_ID = createField("PARTY_ID", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * Create a <code>PUBLIC.ACCOUNT</code> table reference
@@ -127,7 +127,7 @@ public class Account extends TableImpl<AccountRecord> {
      */
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.FK_ACCOUNT_PARTY_INDEX_E, Indexes.PRIMARY_KEY_E);
+        return Arrays.<Index>asList(Indexes.ACCOUNT_FK0_INDEX_E, Indexes.CONSTRAINT_INDEX_E, Indexes.PRIMARY_KEY_E);
     }
 
     /**
@@ -135,7 +135,7 @@ public class Account extends TableImpl<AccountRecord> {
      */
     @Override
     public UniqueKey<AccountRecord> getPrimaryKey() {
-        return Keys.PK_ACCOUNT;
+        return Keys.CONSTRAINT_E4;
     }
 
     /**
@@ -143,7 +143,7 @@ public class Account extends TableImpl<AccountRecord> {
      */
     @Override
     public List<UniqueKey<AccountRecord>> getKeys() {
-        return Arrays.<UniqueKey<AccountRecord>>asList(Keys.PK_ACCOUNT);
+        return Arrays.<UniqueKey<AccountRecord>>asList(Keys.CONSTRAINT_E4, Keys.CONSTRAINT_E);
     }
 
     /**
@@ -151,11 +151,11 @@ public class Account extends TableImpl<AccountRecord> {
      */
     @Override
     public List<ForeignKey<AccountRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<AccountRecord, ?>>asList(Keys.FK_ACCOUNT_PARTY);
+        return Arrays.<ForeignKey<AccountRecord, ?>>asList(Keys.ACCOUNT_FK0);
     }
 
     public Party party() {
-        return new Party(this, Keys.FK_ACCOUNT_PARTY);
+        return new Party(this, Keys.ACCOUNT_FK0);
     }
 
     /**

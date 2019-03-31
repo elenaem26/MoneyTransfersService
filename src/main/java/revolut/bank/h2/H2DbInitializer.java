@@ -151,6 +151,7 @@ public class H2DbInitializer {
                 .column(TRANSFER.FROM_ACCOUNT_ID, SQLDataType.VARCHAR(255).nullable(false))
                 .column(TRANSFER.TO_ACCOUNT_ID, SQLDataType.VARCHAR(255).nullable(false))
                 .column(TRANSFER.TIMESTAMP, SQLDataType.TIMESTAMP.nullable(false))
+                .column(TRANSFER.STATE, SQLDataType.VARCHAR(50).nullable(false))
                 .column(TRANSFER.AMOUNT, SQLDataType.BIGINT.nullable(false))
                 .constraints(
                         constraint("PK_TRANSFER").primaryKey(TRANSFER.ID),

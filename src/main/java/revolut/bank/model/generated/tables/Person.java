@@ -12,6 +12,7 @@ import javax.annotation.Generated;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
+import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -41,7 +42,7 @@ import revolut.bank.model.generated.tables.records.PersonRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Person extends TableImpl<PersonRecord> {
 
-    private static final long serialVersionUID = -1806539380;
+    private static final long serialVersionUID = -2140392082;
 
     /**
      * The reference instance of <code>PUBLIC.PERSON</code>
@@ -59,7 +60,7 @@ public class Person extends TableImpl<PersonRecord> {
     /**
      * The column <code>PUBLIC.PERSON.PARTY_ID</code>.
      */
-    public final TableField<PersonRecord, Long> PARTY_ID = createField("PARTY_ID", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+    public final TableField<PersonRecord, Long> PARTY_ID = createField("PARTY_ID", org.jooq.impl.SQLDataType.BIGINT.nullable(false).identity(true), this, "");
 
     /**
      * The column <code>PUBLIC.PERSON.FIRST_NAME</code>.
@@ -77,14 +78,14 @@ public class Person extends TableImpl<PersonRecord> {
     public final TableField<PersonRecord, String> MIDDLE_NAME = createField("MIDDLE_NAME", org.jooq.impl.SQLDataType.VARCHAR(1000), this, "");
 
     /**
-     * The column <code>PUBLIC.PERSON.ADDRESS</code>.
-     */
-    public final TableField<PersonRecord, String> ADDRESS = createField("ADDRESS", org.jooq.impl.SQLDataType.VARCHAR(1000).nullable(false), this, "");
-
-    /**
      * The column <code>PUBLIC.PERSON.BIRTH_DATE</code>.
      */
     public final TableField<PersonRecord, Date> BIRTH_DATE = createField("BIRTH_DATE", org.jooq.impl.SQLDataType.DATE.nullable(false), this, "");
+
+    /**
+     * The column <code>PUBLIC.PERSON.ADDRESS</code>.
+     */
+    public final TableField<PersonRecord, String> ADDRESS = createField("ADDRESS", org.jooq.impl.SQLDataType.VARCHAR(1000).nullable(false), this, "");
 
     /**
      * Create a <code>PUBLIC.PERSON</code> table reference
@@ -139,8 +140,16 @@ public class Person extends TableImpl<PersonRecord> {
      * {@inheritDoc}
      */
     @Override
+    public Identity<PersonRecord, Long> getIdentity() {
+        return Keys.IDENTITY_PERSON;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public UniqueKey<PersonRecord> getPrimaryKey() {
-        return Keys.PK_PERSON;
+        return Keys.CONSTRAINT_8;
     }
 
     /**
@@ -148,7 +157,7 @@ public class Person extends TableImpl<PersonRecord> {
      */
     @Override
     public List<UniqueKey<PersonRecord>> getKeys() {
-        return Arrays.<UniqueKey<PersonRecord>>asList(Keys.PK_PERSON);
+        return Arrays.<UniqueKey<PersonRecord>>asList(Keys.CONSTRAINT_8);
     }
 
     /**
@@ -156,11 +165,11 @@ public class Person extends TableImpl<PersonRecord> {
      */
     @Override
     public List<ForeignKey<PersonRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<PersonRecord, ?>>asList(Keys.FK_PERSON_PARTY);
+        return Arrays.<ForeignKey<PersonRecord, ?>>asList(Keys.PERSON_FK0);
     }
 
     public Party party() {
-        return new Party(this, Keys.FK_PERSON_PARTY);
+        return new Party(this, Keys.PERSON_FK0);
     }
 
     /**
