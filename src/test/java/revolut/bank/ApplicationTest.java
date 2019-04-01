@@ -24,6 +24,7 @@ import static junit.framework.Assert.assertTrue;
 
 /**
  * Testing the application REST API.
+ * I use Thread.sleep in order to give time to the {@link revolut.bank.service.MoneyTransferJob} to work out
  */
 public class ApplicationTest {
 
